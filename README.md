@@ -8,7 +8,7 @@ Node.js File Manager
 TODO
 --------
 
-a lot to todo:
+a lot todo's:
 - crumbtrail
 - delete files/folder from db
 - display thumbnail for picture
