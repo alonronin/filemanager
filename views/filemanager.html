@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{title}</title>
+
+    <style type="text/css">
+        body {
+            font-family:Verdana, Geneva, sans-serif;
+            font-size:13px;
+            color:#333;
+            background:url(/bg.jpg);
+        }
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            background: white;
+            border: 1px solid #888888;
+        }
+
+        table th,
+        table td {
+            text-align: left;
+            padding: 10px 5px;
+        }
+
+        table thead {
+            border-bottom: 1px solid #999999;
+        }
+
+        #container {
+            margin-bottom: 20px;
+        }
+
+        #container ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #container ul li {
+            float: left;
+            margin-right: 10px;
+        }
+    </style>
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script type="text/javascript" src="/resources/plupload/js/plupload.js"></script>
+    <script type="text/javascript" src="/resources/plupload/js/plupload.html5.js"></script>
+
+
+</head>
+<body>
+
+<h1>{title}</h1>
+
+<div id="container">
+    <div id="filelist">No runtime found.</div>
+    <br />
+    <ul>
+        <li><a id="newfolder" href="javascript:;">[New Folder]</a></li>
+        <li><a id="pickfiles" href="javascript:;">[Select files]</a></li>
+        <li><a id="uploadfiles" href="javascript:;">[Upload files]</a></li>
+    </ul>
+</div>
+
+<br clear="both">
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th></th>
+            <th>Size</th>
+            <th>Format</th>
+        </tr>
+    </thead>
+    <tbody>
+    {#files}
+    <tr>
+        <td>{?folder}<a href="/filemanager?id={id}">{name}</a>{:else}{name}{/folder}</td>
+        <td>{thumb}</td>
+        <td>{size}</td>
+        <td>{?resource_type}{resource_type}/{format}{:else}Folder{/resource_type}</td>
+    </tr>
+    {/files}
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    var uploader = new plupload.Uploader({
+        runtimes : 'html5',
+        browse_button : 'pickfiles',
+        container: 'container',
+        max_file_size : '10mb',
+        url : '/upload{?id}?id={id}{/id}',
+        resize : {width : 320, height : 240, quality : 90},
+        filters : [
+            {title : "Image files", extensions : "jpg,gif,png"},
+            {title : "Zip files", extensions : "zip"}
+        ]
+    });
+
+    uploader.bind('Init', function(up, params) {
+        $('#filelist').html('<div>Current runtime: ' + params.runtime + '</div>');
+    });
+
+    uploader.bind('FilesAdded', function(up, files) {
+        var html;
+
+        for (var i in files) {
+            html += '<div id="' + files[i].id + '">' + files[i].name + ' (' + plupload.formatSize(files[i].size) + ') <b></b></div>';
+        }
+
+        $('#filelist').html(html);
+    });
+
+    uploader.bind('UploadProgress', function(up, file) {
+        $('#' + file.id + ' b').html('<span>' + file.percent + '%</span>');
+    });
+
+    $('#uploadfiles').on('click', function(e) {
+        uploader.start();
+        e.preventDefault();
+    });
+
+    $('#newfolder').on('click', function(e){
+        var name = prompt('Folder Name', 'New Folder');
+        if(name === null) return;
+
+        $.post('/filemanager/create/folder', {name: name || 'New Folder'{?id}, parent: '{id}'{/id}}).done(function(){
+            console.log(arguments);
+        });
+
+        e.preventDefault();
+    });
+
+    uploader.init();
+</script>
+</body>
+</html>
