@@ -34,6 +34,7 @@ app.configure('development', function () {
 });
 
 require('mongoose').connect(app.get('mongo'));
+require('./helpers');
 require('./routes');
 
 http.createServer(app).listen(app.get('port'), function () {

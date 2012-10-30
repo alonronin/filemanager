@@ -12,7 +12,7 @@
         }
 
         table {
-            width: 80%;
+            width: 100%;
             border-collapse: collapse;
             background: white;
             border: 1px solid #888888;
@@ -24,10 +24,27 @@
             padding: 10px 5px;
         }
 
+        table td.folder {
+            font-weight: bold;
+        }
+
+        table td a {
+            color: black;
+            text-decoration: none;
+        }
+
+        table td a:hover {
+            text-decoration: underline;
+        }
+
         table thead {
             border-bottom: 1px solid #999999;
         }
 
+        .container {
+            width: 80%;
+            margin: auto;
+        }
         #container {
             margin-bottom: 20px;
         }
@@ -47,46 +64,48 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script type="text/javascript" src="/resources/plupload/js/plupload.js"></script>
     <script type="text/javascript" src="/resources/plupload/js/plupload.html5.js"></script>
-
-
 </head>
 <body>
 
-<h1>{title}</h1>
+<div class="container">
+    <h1>{title}</h1>
 
-<div id="container">
-    <div id="filelist">No runtime found.</div>
-    <br />
-    <ul>
-        <li><a id="newfolder" href="javascript:;">[New Folder]</a></li>
-        <li><a id="pickfiles" href="javascript:;">[Select files]</a></li>
-        <li><a id="uploadfiles" href="javascript:;">[Upload files]</a></li>
-    </ul>
-</div>
+    <div id="container">
+        <div id="filelist">No runtime found.</div>
+        <br />
+        <ul>
+            <li><a id="newfolder" href="javascript:;">[New Folder]</a></li>
+            <li><a id="delete" href="javascript:;">[Delete]</a></li>
+            <li><a id="pickfiles" href="javascript:;">[Select files]</a></li>
+            <li><a id="uploadfiles" href="javascript:;">[Upload files]</a></li>
+        </ul>
+    </div>
 
-<br clear="both">
+    <br clear="both">
 
-<table>
-    <thead>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30px"><input type="checkbox"></th>
+                <th>Name</th>
+                <th style="width: 100px"></th>
+                <th style="width: 100px">Size</th>
+                <th style="width: 100px">Format</th>
+            </tr>
+        </thead>
+        <tbody>
+        {#files}
         <tr>
-            <th>Name</th>
-            <th></th>
-            <th>Size</th>
-            <th>Format</th>
+            <td><input type="checkbox" name="id" value="{id}"></td>
+            <td {?folder}class="folder"{/folder}>{?folder}<a href="/filemanager?id={id}">{name}</a>{:else}<a href="{url}">{name}</a>{/folder}</td>
+            <td>{^folder}<img src="{@cloudinary width="50" height="50" crop="thumb" quality="30" /}" alt="{name}">{/folder}</td>
+            <td>{size}</td>
+            <td>{?resource_type}{resource_type}/{format}{:else}Folder{/resource_type}</td>
         </tr>
-    </thead>
-    <tbody>
-    {#files}
-    <tr>
-        <td>{?folder}<a href="/filemanager?id={id}">{name}</a>{:else}{name}{/folder}</td>
-        <td>{thumb}</td>
-        <td>{size}</td>
-        <td>{?resource_type}{resource_type}/{format}{:else}Folder{/resource_type}</td>
-    </tr>
-    {/files}
-    </tbody>
-</table>
-
+        {/files}
+        </tbody>
+    </table>
+</div>
 <script type="text/javascript">
     var uploader = new plupload.Uploader({
         runtimes : 'html5',
@@ -122,6 +141,12 @@
     $('#uploadfiles').on('click', function(e) {
         uploader.start();
         e.preventDefault();
+    });
+
+    $('#delete').on('click', function(e) {
+        alert($(':checked').serialize());
+        e.preventDefault();
+
     });
 
     $('#newfolder').on('click', function(e){

@@ -2,18 +2,15 @@ var dust = require('dustjs-helpers'),
     models = require('./models');
 
 dust.helpers["cloudinary"] = function (chunk, context, bodies, params) {
-    var picture = context.get(params.path);
+    context = params && params.path ? context.get(params.path) : context.current();
+
+    if(!context.public_id) return chunk;
+
+    params.format = params.format || context.format;
+
     return chunk.write(
         require('cloudinary').url(
-            picture.public_id + '.' + (params.format || picture.format), {
-                width: params.width,
-                height: params.height,
-                type: params.type,
-                crop: params.crop,
-                gravity: params.gravity,
-                radius: params.radius,
-                quality: params.quality
-            }
+            context.public_id, params
         )
     )
 };
