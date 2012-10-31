@@ -7,7 +7,7 @@ var app = express.__app = express();
 app.configure(function () {
     app.set('port', process.env.PORT || 80);
     app.set('mongo', process.env.MONGOLAB_URI || 'mongodb://localhost/filemanager');
-    app.set('cloudinary', (process.env.CLOUDINARY_URL ? process.env.CLOUDINARY_URL : process.env.CLOUDINARY_URL='cloudinary://257582562521111:espYKm0g78k1eeWrccO20svbALc@ronin'));
+    app.set('cloudinary', (process.env.CLOUDINARY_URL));
 
     app.engine('html', require('consolidate').dust);
     app.set('view engine', 'html');
