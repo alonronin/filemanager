@@ -5,16 +5,61 @@ var app = require('express').__app,
     cloudinary = require('cloudinary'),
     filemanager = require('../models').filemanager;
 
+
+var crumbs = function(req, res, next){
+    var crumbs = [];
+
+    var parent = function(id){
+        filemanager
+            .findOne()
+            .where('_id', id)
+            .exec(function(err, folder){
+                if(folder) {
+                    crumbs.push(folder.toObject());
+                    parent(folder.parent);
+                }else{
+                    req.crumbs = crumbs.reverse();
+                    next()
+                }
+
+            })
+    };
+
+    if(req.query.id){
+        parent(req.query.id);
+    }
+    else next();
+};
+
 app.get('/files', function(req, res){
     filemanager.find().exec(function(err, docs){
         res.json(err || docs);
     })
 });
 
-app.get('/filemanager', function(req, res){
+app.get('/filemanager', [crumbs], function(req, res){
     filemanager.find().where('parent', req.query.id || null).sort({parent: 1, folder: -1}).exec(function(err, docs){
-        res.render('filemanager.html', {title: 'File Manager', files: docs, id: req.query.id});
+        res.render('filemanager', {title: 'File Manager', crumbs: req.crumbs, files: docs, id: req.query.id});
     });
+});
+
+app.post('/filemanager/delete', function(req, res){
+    var arr = [];
+
+    if (req.body.id instanceof Array) {
+        arr = req.body.id;
+    } else {
+        arr.push(req.body.id);
+    }
+
+
+
+    var q = filemanager.where('_id').in(arr);
+
+    q.remove(function(err, docs){
+        if(err) res.end(500);
+        else res.json(docs);
+    })
 });
 
 app.post('/filemanager/create/folder', function(req, res){
@@ -28,8 +73,6 @@ app.post('/filemanager/create/folder', function(req, res){
 });
 
 app.post('/upload', function(req, res){
-    console.log(req);
-
     var files = [];
     for(var file in req.files){
         if(req.files[file].size)

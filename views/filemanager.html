@@ -11,6 +11,16 @@
             background:url(/bg.jpg);
         }
 
+        a {
+            color: blue;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -59,6 +69,26 @@
             float: left;
             margin-right: 10px;
         }
+
+        .crumbs {
+        }
+
+        .crumbs ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .crumbs li {
+            float: left;
+            margin-right: 10px;
+        }
+
+        .crumbs li:before
+        {
+            content:"> ";
+            color: red;
+        }
     </style>
 
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
@@ -82,6 +112,20 @@
     </div>
 
     <br clear="both">
+
+    <div class="crumbs">
+        {?crumbs}
+        <ul>
+            <li><a href="/filemanager">main</a></li>
+            {#crumbs}
+            <li><a href="?id={_id}">{name}</a></li>
+            {/crumbs}
+        </ul>
+
+        <br clear="both"><br>
+        {/crumbs}
+    </div>
+
 
     <table>
         <thead>
@@ -138,14 +182,21 @@
         $('#' + file.id + ' b').html('<span>' + file.percent + '%</span>');
     });
 
+    uploader.bind('UploadComplete', function(up, files){
+        location.reload();
+    });
+
     $('#uploadfiles').on('click', function(e) {
         uploader.start();
         e.preventDefault();
     });
 
     $('#delete').on('click', function(e) {
-        alert($(':checked').serialize());
         e.preventDefault();
+
+        $.post('/filemanager/delete', $(':checked').serialize()).done(function(){
+            location.reload();
+        });
 
     });
 
@@ -154,7 +205,7 @@
         if(name === null) return;
 
         $.post('/filemanager/create/folder', {name: name || 'New Folder'{?id}, parent: '{id}'{/id}}).done(function(){
-            console.log(arguments);
+            location.reload();
         });
 
         e.preventDefault();
