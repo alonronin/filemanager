@@ -43,23 +43,44 @@ app.get('/filemanager', [crumbs], function(req, res){
     });
 });
 
-app.post('/filemanager/delete', function(req, res){
+var files = function(req, res, next){
     var arr = [];
 
-    if (req.body.id instanceof Array) {
+    if (Array.isArray(req.body.id)) {
         arr = req.body.id;
     } else {
         arr.push(req.body.id);
     }
 
+    filemanager
+        .where('_id')
+        .in(arr)
+        .exec(function(err, docs){
+            if(err) return next(err);
 
+            res.files = docs;
+            res.ids = [];
 
-    var q = filemanager.where('_id').in(arr);
+            res.files.map(function(file){
+                if(file.public_id) res.ids.push(file.public_id);
+            });
 
-    q.remove(function(err, docs){
-        if(err) res.end(500);
-        else res.json(docs);
-    })
+            next();
+        });
+};
+
+var delete_resources = function(req, res, next){
+    cloudinary.api.delete_resources(res.ids, function(){
+        next();
+    });
+};
+
+app.post('/filemanager/delete', [files, delete_resources], function(req, res){
+    async.forEach(res.files,function(file, callback){
+        file.remove(callback);
+    }, function(err){
+        res.json(err || res.files);
+    });
 });
 
 app.post('/filemanager/create/folder', function(req, res){
@@ -72,7 +93,7 @@ app.post('/filemanager/create/folder', function(req, res){
     })
 });
 
-app.post('/upload', function(req, res){
+app.post('/filemanager/upload', function(req, res){
     var files = [];
     for(var file in req.files){
         if(req.files[file].size)
@@ -80,15 +101,17 @@ app.post('/upload', function(req, res){
     }
 
     async.forEach(files, function(file, callback){
+        var format = file.name.split('.').pop();
         cloudinary.uploader.upload(file.path, function(result) {
             result.name = file.name;
             result.size = file.size;
             result.folder = false;
             result.parent = req.query.id || null;
+            result.format || (result.format = format);
 
             var f = new filemanager(result);
             f.save(callback);
-        });
+        }, { resource_type: /^image/i.test(file.type) ? 'image' : 'raw', format: format});
     }, function(err){
         res.json(err || {jsonrpc : '2.0', result : null, id : 'id'});
     });

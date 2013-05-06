@@ -142,7 +142,7 @@
         <tr>
             <td><input type="checkbox" name="id" value="{id}"></td>
             <td {?folder}class="folder"{/folder}>{?folder}<a href="/filemanager?id={id}">{name}</a>{:else}<a href="{url}">{name}</a>{/folder}</td>
-            <td>{^folder}<img src="{@cloudinary width="50" height="50" crop="thumb" quality="30" /}" alt="{name}">{/folder}</td>
+            <td>{^folder}{@if cond="'{resource_type}' == 'image'"}<img src="{@cloudinary width="50" height="50" crop="thumb" quality="30" /}" alt="{name}">{/if}{/folder}</td>
             <td>{size}</td>
             <td>{?resource_type}{resource_type}/{format}{:else}Folder{/resource_type}</td>
         </tr>
@@ -156,7 +156,7 @@
         browse_button : 'pickfiles',
         container: 'container',
         max_file_size : '10mb',
-        url : '/upload{?id}?id={id}{/id}',
+        url : '/filemanager/upload{?id}?id={id}{/id}',
         resize : {width : 320, height : 240, quality : 90},
         filters : [
             {title : "Image files", extensions : "jpg,gif,png"},
