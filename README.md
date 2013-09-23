@@ -17,5 +17,6 @@ a lot todo's:
 - integrate an mv* on client side?
 - custom service for storage integration
 - make it as npm package
+- pluggable upload function returens object of url, title, size, type. can check type and upload to desired source
 
 
